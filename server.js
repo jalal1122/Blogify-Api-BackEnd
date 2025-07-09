@@ -8,10 +8,7 @@ const app = express();
 // connect to MongoDB using mongoose
 const MONGO_URI = process.env.CONNECTION_STRING;
 mongoose
-  .connect(MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
+  .connect(MONGO_URI)
   .then(() => {
     console.log("MongoDB connected successfully");
     // listen on the specified port
