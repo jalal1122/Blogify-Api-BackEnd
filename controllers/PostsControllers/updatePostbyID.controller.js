@@ -1,4 +1,4 @@
-import Post from "../../models/posts.models";
+import Post from "../../models/posts.models.js";
 
 // Update a post by ID
 const updatePostbyId = async (req, res) => {

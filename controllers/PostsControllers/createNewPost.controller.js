@@ -1,4 +1,4 @@
-import Post from "../../models/posts.models";
+import Post from "../../models/posts.models.js";
 
 // Create a new post
 // This function creates a new post with the provided data and saves it to the database.

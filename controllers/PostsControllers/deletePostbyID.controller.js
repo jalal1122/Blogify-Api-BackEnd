@@ -1,4 +1,4 @@
-import Post from "../../models/posts.models";
+import Post from "../../models/posts.models.js";
 
 // Delete a post by ID
 const deletePostById = async (req, res) => {

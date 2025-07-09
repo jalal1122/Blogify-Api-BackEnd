@@ -12,7 +12,14 @@ mongoose
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
-  .then(() => console.log("MongoDB connected successfully"))
+  .then(() => {
+    console.log("MongoDB connected successfully");
+    // listen on the specified port
+    // and log a message to the console
+    app.listen(PORT, () => {
+      console.log(`Server is running on http://localhost:${PORT}`);
+    });
+  })
   .catch((err) => console.error("MongoDB connection error:", err));
 
 // get the port from environment variables or default to 3000
@@ -29,9 +36,3 @@ app.get("/", (req, res) => {
 
 // use the router middleware for handling routes
 app.use("/api", postsRouter);
-
-// listen on the specified port
-// and log a message to the console
-app.listen(PORT, () => {
-  console.log(`Server is running on http://localhost:${PORT}`);
-});

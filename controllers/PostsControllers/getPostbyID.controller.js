@@ -1,4 +1,4 @@
-import Post from "../../models/posts.models";
+import Post from "../../models/posts.models.js";
 
 // Get Post by ID
 // This function retrieves a single post by its ID from the database and sends it as a JSON
