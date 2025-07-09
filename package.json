@@ -1,0 +1,26 @@
+{
+  "name": "blogify-api-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "start" : "node --watch --env-file=.env server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jalal1122/Blogify-Api-BackEnd.git"
+  },
+  "keywords": [],
+  "author": "MjDevStudio",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/jalal1122/Blogify-Api-BackEnd/issues"
+  },
+  "homepage": "https://github.com/jalal1122/Blogify-Api-BackEnd#readme",
+  "dependencies": {
+    "express": "^5.1.0",
+    "mongodb": "^6.17.0",
+    "mongoose": "^8.16.2"
+  }
+}
