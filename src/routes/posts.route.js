@@ -1,16 +1,19 @@
 import express from "express";
 import {
+  createPost,
+  deleteAllPosts,
+  deletePostById,
   getAllPosts,
   getPostById,
-  createPost,
-  updatePostbyId,
-  deletePostById,
-  deleteAllPosts,
   getPostStats,
+  updatePostbyId,
 } from "../controllers/post.controller.js";
 
 // Create a new router instance for handling posts-related routes
 const postsRouter = express.Router();
+
+// define the route for getting post statistics (must come before /posts)
+postsRouter.get("/posts/stats", getPostStats);
 
 // define the route for all posts
 postsRouter.get("/posts", getAllPosts);
@@ -29,9 +32,6 @@ postsRouter.delete("/post/:id", deletePostById);
 
 // define the route for deleting all posts
 postsRouter.delete("/posts", deleteAllPosts);
-
-// define the route for getting post statistics
-postsRouter.get("/posts/stats", getPostStats);
 
 // export the router to be used in the main application
 export default postsRouter;

@@ -1,66 +1,66 @@
 import Post from "../models/posts.models.js";
+import asyncHandler from "../utils/asyncHandler.js";
+import ApiError from "../utils/ApiError.js";
+import ApiResponse from "../utils/ApiResponse.js";
 
 // Create a new post
 // This function creates a new post with the provided data and saves it to the database.
-const createPost = async (req, res) => {
+const createPost = asyncHandler(async (req, res) => {
   const { title, content, author, category, tags } = req.body;
-  try {
-    const newPost = await Post.create({
-      title,
-      content,
-      author,
-      category,
-      tags,
-    });
-    // If the post is created successfully, it sends the new post data with a 201 status code
-    res.status(201).json(newPost);
-  } catch (error) {
-    // If an error occurs, it sends a 500 status code with an error message
-    res
-      .status(500)
-      .json({ message: "Error creating post", error: error.message });
+  const newPost = await Post.create({
+    title,
+    content,
+    author,
+    category,
+    tags,
+  });
+
+  if (!newPost) {
+    // If the post creation fails, it throws an ApiError with a 500 status code
+    throw new ApiError(500, "Failed to create post");
   }
-};
+
+  // If the post is created successfully, it sends the new post data with a 201 status code
+  res
+    .status(201)
+    .json(new ApiResponse(201, "Post created successfully", newPost));
+});
 
 // Delete All Posts
-const deleteAllPosts = async (req, res) => {
-  try {
-    // Delete all posts from the database
-    await Post.deleteMany({});
+const deleteAllPosts = asyncHandler(async (req, res) => {
+  // Delete all posts from the database
+  const result = await Post.deleteMany({});
 
-    // Send a success response
-    res.status(200).json({
-      message: "All posts deleted successfully",
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: "Error deleting all posts",
-      error: error.message,
-    });
+  if (result.deletedCount === 0) {
+    // If no posts were deleted, it throws an ApiError with a 404 status code
+    throw new ApiError(404, "No posts found to delete");
   }
-};
+
+  res.status(200).json(
+    new ApiResponse(200, "All posts deleted successfully", {
+      deletedCount: result.deletedCount,
+    })
+  );
+});
 
 // Delete a post by ID
-const deletePostById = async (req, res) => {
+const deletePostById = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  try {
-    // Find the post by ID and delete it
-    const deletedPost = await Post.findByIdAndDelete(id);
-    // If the post is not found, it sends a 404 status code with a message
-    if (!deletedPost) {
-      return res.status(404).json({ message: "Post not found" });
-    }
-    // If the post is deleted successfully, it sends a success message with a 200 status code
-    res.status(200).json({ message: "Post deleted successfully" });
-  } catch (error) {
-    // If an error occurs, it sends a 500 status code with an error message
-    res.status(500).json({ message: "Error deleting post", error });
+  // Find the post by ID and delete it
+  const deletedPost = await Post.findByIdAndDelete(id);
+  // If the post is not found, it sends a 404 status code with a message
+  if (!deletedPost) {
+    throw new ApiError(404, "Post not found");
   }
-};
+  // If the post is deleted successfully, it sends a success message with a 200 status code
+  res
+    .status(200)
+    .json(new ApiResponse(200, "Post deleted successfully", deletedPost));
+});
 
 // Get All Posts
 // This function retrieves all posts from the database and sends them as a JSON response.
-const getAllPosts = async (req, res) => {
+const getAllPosts = asyncHandler(async (req, res) => {
   const { search, category, author, page, limit, tag, sort } = req.query;
 
   // Calculate pagination
@@ -70,129 +70,115 @@ const getAllPosts = async (req, res) => {
 
   // Determine sort order
   const sortOrder = sort === "asc" ? 1 : -1; // Default to descending (-1)
+  // Build query filters
+  const filters = [];
 
-  try {
-    // Build query filters
-    const filters = [];
-
-    // Add search filter if provided
-    if (search) {
-      filters.push({
-        $or: [
-          { title: { $regex: search, $options: "i" } },
-          { content: { $regex: search, $options: "i" } },
-        ],
-      });
-    }
-
-    // Add category filter if provided
-    if (category) {
-      filters.push({ category: { $regex: category, $options: "i" } });
-    }
-
-    // Add author filter if provided
-    if (author) {
-      filters.push({ author: { $regex: author, $options: "i" } });
-    }
-
-    // Add tag filter if provided
-    if (tag) {
-      filters.push({ tags: { $in: [tag] } });
-    }
-
-    // Combine all filters with $and operator, or use empty object if no filters
-    const query = filters.length > 0 ? { $and: filters } : {};
-
-    // Execute query with pagination and sorting
-    const posts = await Post.find(query)
-      .skip(skip)
-      .limit(limitNum)
-      .sort({ createdAt: sortOrder });
-
-    if (posts.length === 0) {
-      return res
-        .status(404)
-        .json({ message: "No posts found with the cirteria" });
-    }
-
-    res.status(200).json(posts);
-  } catch (error) {
-    // If an error occurs, it sends a 500 status code with an error message
-    res.status(500).json({ message: "Error fetching posts", error });
+  // Add search filter if provided
+  if (search) {
+    filters.push({
+      $or: [
+        { title: { $regex: search, $options: "i" } },
+        { content: { $regex: search, $options: "i" } },
+      ],
+    });
   }
-};
+
+  // Add category filter if provided
+  if (category) {
+    filters.push({ category: { $regex: category, $options: "i" } });
+  }
+
+  // Add author filter if provided
+  if (author) {
+    filters.push({ author: { $regex: author, $options: "i" } });
+  }
+
+  // Add tag filter if provided
+  if (tag) {
+    filters.push({ tags: { $in: [tag] } });
+  }
+
+  // Combine all filters with $and operator, or use empty object if no filters
+  const query = filters.length > 0 ? { $and: filters } : {};
+
+  // Execute query with pagination and sorting
+  const posts = await Post.find(query)
+    .skip(skip)
+    .limit(limitNum)
+    .sort({ createdAt: sortOrder });
+
+  if (posts.length === 0) {
+    throw new ApiError(404, "No posts found matching the criteria");
+  }
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, "Posts retrieved successfully", posts));
+});
 
 // Get Post by ID
 // This function retrieves a single post by its ID from the database and sends it as a JSON
-const getPostById = async (req, res) => {
+const getPostById = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  try {
-    const post = await Post.findById(id);
-    // If the post is not found, it sends a 404 status code with a message
-    // If the post is found, it sends the post data with a 200 status code
-    if (!post) {
-      return res.status(404).json({ message: "Post not found" });
-    }
-    res.status(200).json(post);
-  } catch (error) {
-    // If an error occurs, it sends a 500 status code with an error message
-    res.status(500).json({ message: "Error fetching post", error });
+  const post = await Post.findById(id);
+  // If the post is not found, it sends a 404 status code with a message
+  // If the post is found, it sends the post data with a 200 status code
+  if (!post) {
+    throw new ApiError(404, "Post not found");
   }
-};
+
+  res
+    .status(200)
+    .json(new ApiResponse(200, "Post retrieved successfully", post));
+});
 
 // Get Post Statistics
-const getPostStats = async (req, res) => {
-  try {
-    // Count total number of posts
-    const totalPosts = await Post.countDocuments();
+const getPostStats = asyncHandler(async (req, res) => {
+  // Count total number of posts
+  const totalPosts = await Post.countDocuments();
 
-    // Count posts by category
-    const postsByCategory = await Post.aggregate([
-      { $group: { _id: "$category", count: { $sum: 1 } } },
-      { $project: { category: "$_id", count: 1, _id: 0 } },
-    ]);
+  // Count posts by category
+  const postsByCategory = await Post.aggregate([
+    { $group: { _id: "$category", count: { $sum: 1 } } },
+    { $project: { category: "$_id", count: 1, _id: 0 } },
+  ]);
 
-    // Count posts by author
-    const postsByAuthor = await Post.aggregate([
-      { $group: { _id: "$author", count: { $sum: 1 } } },
-      { $project: { author: "$_id", count: 1, _id: 0 } },
-    ]);
+  // Count posts by author
+  const postsByAuthor = await Post.aggregate([
+    { $group: { _id: "$author", count: { $sum: 1 } } },
+    { $project: { author: "$_id", count: 1, _id: 0 } },
+  ]);
 
-    res.status(200).json({
+  res.status(200).json(
+    new ApiResponse(200, "Post statistics retrieved successfully", {
       totalPosts,
       postsByCategory,
       postsByAuthor,
-    });
-  } catch (error) {
-    // If an error occurs, it sends a 500 status code with an error message
-    res.status(500).json({ message: "Error fetching post statistics", error });
-  }
-};
+    })
+  );
+});
 
 // Update a post by ID
-const updatePostbyId = async (req, res) => {
-  try {
-    // Extract the post ID from the request parameters and the updated data from the request body
-    const { id } = req.params;
-    const { title, content, author, category, tags } = req.body;
+const updatePostbyId = asyncHandler(async (req, res) => {
+  // Extract the post ID from the request parameters and the updated data from the request body
+  const { id } = req.params;
+  const { title, content, author, category, tags } = req.body;
 
-    // Find the post by ID and update it with the new data
-    const updatedPost = await Post.findByIdAndUpdate(
-      id,
-      { title, content, author, category, tags },
-      { new: true } // This option returns the updated document
-    );
-    // If the post is not found, it sends a 404 status code with a message
-    if (!updatedPost) {
-      return res.status(404).json({ message: "Post not found" });
-    }
-    // If the post is updated successfully, it sends the updated post data with a 200 status code
-    res.status(200).json({ updatedPost, message: "Post updated successfully" });
-  } catch (error) {
-    // If an error occurs, it sends a 500 status code with an error message
-    res.status(500).json({ message: "Error updating post", error });
+  // Find the post by ID and update it with the new data
+  const updatedPost = await Post.findByIdAndUpdate(
+    id,
+    { title, content, author, category, tags },
+    { new: true } // This option returns the updated document
+  );
+  // If the post is not found, it sends a 404 status code with a message
+  if (!updatedPost) {
+    throw new ApiError(404, "Post not found");
   }
-};
+  // If the post is updated successfully, it sends the updated post data with a 200 status code
+  res
+    .status(200)
+    .json(new ApiResponse(200, "Post updated successfully", updatedPost));
+});
 
 export {
   createPost,

@@ -8,7 +8,6 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-
 // default home route to test the server
 app.get("/", (req, res) => {
   res.send("Hello, for my first Blog Api");
