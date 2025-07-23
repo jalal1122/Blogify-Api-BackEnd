@@ -1,6 +1,7 @@
 import express from "express";
 import postsRouter from "./routes/posts.route.js";
 import mongoose from "mongoose";
+import { errorHandler } from "./middleware/error.middleware.js";
 
 // initialize express app
 const app = express();
@@ -25,6 +26,9 @@ const PORT = process.env.PORT || 3000;
 // Middleware to parse JSON and URL-encoded data
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Middleware for error handling
+app.use(errorHandler);
 
 // default home route to test the server
 app.get("/", (req, res) => {
