@@ -1,11 +1,13 @@
 import express from "express";
-import getAllPosts from "../controllers/PostsControllers/getAllPost.controller.js";
-import createPost from "../controllers/PostsControllers/createNewPost.controller.js";
-import deletePostById from "../controllers/PostsControllers/deletePostbyID.controller.js";
-import getPostById from "../controllers/PostsControllers/getPostbyID.controller.js";
-import updatePostbyId from "../controllers/PostsControllers/updatePostbyID.controller.js";
-import deleteAllPosts from "../controllers/PostsControllers/deleteAllPosts.controller.js";
-import getPostStats from "../controllers/PostsControllers/Stats.controller.js";
+import {
+  getAllPosts,
+  getPostById,
+  createPost,
+  updatePostbyId,
+  deletePostById,
+  deleteAllPosts,
+  getPostStats,
+} from "../controllers/post.controller.js";
 
 // Create a new router instance for handling posts-related routes
 const postsRouter = express.Router();

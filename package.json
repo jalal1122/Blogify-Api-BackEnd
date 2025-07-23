@@ -4,8 +4,8 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node --watch --env-file=.env server.js"
+    "start": "node ./src/server.js",
+    "dev": "nodemon ./src/server.js"
   },
   "repository": {
     "type": "git",
@@ -20,8 +20,12 @@
   },
   "homepage": "https://github.com/jalal1122/Blogify-Api-BackEnd#readme",
   "dependencies": {
+    "dotenv": "^17.2.0",
     "express": "^5.1.0",
     "mongodb": "^6.17.0",
     "mongoose": "^8.16.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10"
   }
 }
