@@ -6,30 +6,34 @@ const userSchema = new mongoose.Schema(
   {
     username: {
       type: String,
-      required: true,
+      required: [true, "Username is required"],
+      minlength: [3, "Username must be at least 3 characters"],
+      maxlength: [20, "Username must be under 20 characters"],
+      match: [
+        /^[a-zA-Z0-9_]+$/,
+        "Username can only contain letters, numbers, and underscores",
+      ],
       unique: true,
       trim: true,
     },
     email: {
       type: String,
-      required: true,
-      unique: true,
-      trim: true,
+      required: [true, "Email is required"],
       lowercase: true,
+      unique: true,
+      match: [/^\S+@\S+\.\S+$/, "Please enter a valid email address"],
     },
     password: {
       type: String,
-      required: true,
-      minlength: 6,
-    },
-    refreshToken: {
-      type: String,
-      default: null,
+      required: [true, "Password is required"],
+      minlength: [6, "Password must be at least 6 characters"],
+      match: [
+        /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&]).{6,}$/,
+        "Password must contain at least one letter, one number, and one special character (@$!%*#?&)",
+      ],
     },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
 userSchema.pre("save", async function (next) {
