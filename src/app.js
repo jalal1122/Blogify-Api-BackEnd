@@ -1,5 +1,6 @@
 import express from "express";
 import postsRouter from "./routes/posts.route.js";
+import userRouter from "./routes/user.route.js";
 import cors from "cors";
 
 // initialize express app
@@ -21,5 +22,6 @@ app.get("/", (req, res) => {
 
 // use the router middleware for handling routes
 app.use("/api", postsRouter);
+app.use("/api/user", userRouter);
 
 export default app;
