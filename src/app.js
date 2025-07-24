@@ -2,6 +2,7 @@ import express from "express";
 import postsRouter from "./routes/posts.route.js";
 import userRouter from "./routes/user.route.js";
 import bodyParser from "body-parser";
+import cookieParser from "cookie-parser";
 
 // initialize express app
 const app = express();
@@ -10,6 +11,7 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.use(cookieParser());
 
 // default home route to test the server
 app.get("/", (req, res) => {
