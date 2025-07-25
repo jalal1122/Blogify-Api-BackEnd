@@ -29,24 +29,30 @@ const likePost = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Post not found");
   }
 
-  if (post.likes.includes(userId) || post.dislikes.includes(userId)) {
+  if (!post.likes.includes(userId) && post.dislikes.includes(userId)) {
     // if the user has already liked the post, remove the like
-    post.likes = post.likes.filter(
-      (like) => like.toString() !== userId.toString()
-    );
+    post.likes.push(userId);
+
     post.dislikes = post.dislikes.filter(
       (dislike) => dislike.toString() !== userId.toString()
     );
-  } else {
-    // if the user has not liked the post, add the like
+  } else if (post.likes.includes(userId) && !post.dislikes.includes(userId)) {
+    post.likes = post.likes.filter(
+      (like) => like.toString() !== userId.toString()
+    );
+  } else if (!post.likes.includes(userId) && !post.dislikes.includes(userId)) {
+    // if the user has not liked or disliked the post, add the like
     post.likes.push(userId);
   }
 
   // save the post
   await post.save();
 
-  // populate the author field with username and email
+  // populate the post with author, comments, likes, and dislikes
   await post.populate("author", "username email");
+  await post.populate("comments", "author text");
+  await post.populate("likes", "username email");
+  await post.populate("dislikes", "username email");
 
   // respond with the updated post
   res
@@ -80,24 +86,29 @@ const dislikePost = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Post not found");
   }
 
-  if (post.dislikes.includes(userId) || post.likes.includes(userId)) {
-    // if the user has already disliked the post, remove the dislike
-    post.dislikes = post.dislikes.filter(
-      (dislike) => dislike.toString() !== userId.toString()
-    );
+  if (!post.dislikes.includes(userId) && post.likes.includes(userId)) {
+    post.dislikes.push(userId);
+
     post.likes = post.likes.filter(
       (like) => like.toString() !== userId.toString()
     );
-  } else {
-    // if the user has not disliked the post, add the dislike
+  } else if (post.dislikes.includes(userId) && !post.likes.includes(userId)) {
+    post.dislikes = post.dislikes.filter(
+      (dislike) => dislike.toString() !== userId.toString()
+    );
+  } else if (!post.dislikes.includes(userId) && !post.likes.includes(userId)) {
+    // if the user has not liked or disliked the post, add the dislike
     post.dislikes.push(userId);
   }
 
   // save the post
   await post.save();
 
-  // populate the author field with username and email
+  // populate the post with author, comments, likes, and dislikes
   await post.populate("author", "username email");
+  await post.populate("comments", "author text");
+  await post.populate("likes", "username email");
+  await post.populate("dislikes", "username email");
 
   // respond with the updated post
   res
