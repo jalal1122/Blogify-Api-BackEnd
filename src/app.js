@@ -1,6 +1,7 @@
 import express from "express";
 import postsRouter from "./routes/posts.route.js";
 import userRouter from "./routes/user.route.js";
+import commentRouter from "./routes/comments.route.js";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
 
@@ -21,5 +22,6 @@ app.get("/", (req, res) => {
 // use the router middleware for handling routes
 app.use("/api", postsRouter);
 app.use("/api/user", userRouter);
+app.use("/api/comments", commentRouter);
 
 export default app;
