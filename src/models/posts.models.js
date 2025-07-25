@@ -12,6 +12,10 @@ const postSchema = new mongoose.Schema(
     likes: [{ type: Schema.ObjectId, ref: "User" }],
     dislikes: [{ type: Schema.ObjectId, ref: "User" }],
     comments: [{ type: Schema.ObjectId, ref: "Comment" }], // Reference
+    views: {
+      type: Number,
+      default: 0,
+    },
   },
   {
     timestamps: true,

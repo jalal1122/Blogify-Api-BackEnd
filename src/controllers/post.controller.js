@@ -178,10 +178,16 @@ const getPostById = asyncHandler(async (req, res) => {
     throw new ApiError(404, "Post not found");
   }
 
+  // Check if the user is the author of the post
+
   // if author is loggedin or authenticated
   if (post.author.toString() !== userId) {
     throw new ApiError(403, "You are not authorized to view this post");
   }
+
+  // Increment the views count for the post
+  post.views += 1;
+  await post.save();
 
   res
     .status(200)
