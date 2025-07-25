@@ -9,6 +9,9 @@ const postSchema = new mongoose.Schema(
     author: { type: Schema.ObjectId, required: true, ref: "User" }, // Reference to the User model
     category: { type: String, required: true },
     tags: [String],
+    likes: [{ type: Schema.ObjectId, ref: "User" }],
+    dislikes: [{ type: Schema.ObjectId, ref: "User" }],
+    comments: [{ type: Schema.ObjectId, ref: "Comment" }], // Reference
   },
   {
     timestamps: true,

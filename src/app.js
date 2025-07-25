@@ -4,6 +4,7 @@ import userRouter from "./routes/user.route.js";
 import commentRouter from "./routes/comments.route.js";
 import bodyParser from "body-parser";
 import cookieParser from "cookie-parser";
+import likeDislikeRouter from "./routes/likeDislike.route.js";
 
 // initialize express app
 const app = express();
@@ -23,5 +24,6 @@ app.get("/", (req, res) => {
 app.use("/api", postsRouter);
 app.use("/api/user", userRouter);
 app.use("/api/comments", commentRouter);
+app.use("/api", likeDislikeRouter);
 
 export default app;
