@@ -32,6 +32,10 @@ const userSchema = new mongoose.Schema(
         "Password must contain at least one letter, one number, and one special character (@$!%*#?&)",
       ],
     },
+    refreshToken: {
+      type: String,
+      default: null,
+    },
   },
   { timestamps: true }
 );

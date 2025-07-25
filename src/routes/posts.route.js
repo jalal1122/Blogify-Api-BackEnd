@@ -8,6 +8,7 @@ import {
   getPostStats,
   updatePostbyId,
 } from "../controllers/post.controller.js";
+import authMiddleware from "../middleware/auth.middleware.js";
 
 // Create a new router instance for handling posts-related routes
 const postsRouter = express.Router();
@@ -16,19 +17,19 @@ const postsRouter = express.Router();
 postsRouter.get("/posts/stats", getPostStats);
 
 // define the route for all posts
-postsRouter.get("/posts", getAllPosts);
+postsRouter.get("/posts", authMiddleware, getAllPosts);
 
 // define the route for getting a post by ID
-postsRouter.get("/post/:id", getPostById);
+postsRouter.get("/post/:id", authMiddleware, getPostById);
 
 // define the route for creating a new post
-postsRouter.post("/post", createPost);
+postsRouter.post("/post", authMiddleware, createPost);
 
 // define the route for updating a post by ID
-postsRouter.put("/post/:id", updatePostbyId);
+postsRouter.put("/post/:id", authMiddleware, updatePostbyId);
 
 // define the route for deleting a post by ID
-postsRouter.delete("/post/:id", deletePostById);
+postsRouter.delete("/post/:id", authMiddleware, deletePostById);
 
 // define the route for deleting all posts
 postsRouter.delete("/posts", deleteAllPosts);

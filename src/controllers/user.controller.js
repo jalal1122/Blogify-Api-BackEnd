@@ -104,18 +104,11 @@ const loginUser = asyncHandler(async (req, res) => {
 
 // Logout a user
 const logoutUser = asyncHandler(async (req, res) => {
-  const { id } = req.user;
-
-  // Find the user by ID
-  const user = await User.findById(id).select("-password");
-
-  // If user not found, throw an error
-  if (!user) {
-    throw new ApiError(404, "User not found");
-  }
+  const { user } = req;
 
   // Clear the refresh token from the user document
   user.refreshToken = null;
+  
   await user.save();
 
   // clear the refresh token and access token from the cookies and
