@@ -6,13 +6,26 @@ import ApiResponse from "../utils/ApiResponse.js";
 // Create a new post
 // This function creates a new post with the provided data and saves it to the database.
 const createPost = asyncHandler(async (req, res) => {
-  const { title, content, author, category, tags } = req.body;
+  const author = req.cookies?.loggedUser; // Assuming the author's ID is stored in cookies
+
+  if (!author) {
+    throw new ApiError(400, "User is not logged in");
+  }
+
+  const { title, content, category, tags } = req.body;
+
+  // Validate required fields
+  if (!title || !content || !category) {
+    // If any required field is missing, it throws an ApiError with a 400 status code
+    throw new ApiError(400, "Title, content, and category are required");
+  }
+
   const newPost = await Post.create({
     title,
     content,
-    author,
+    author, // Assuming req.user is populated with the authenticated user's data
     category,
-    tags,
+    tags: tags || [], // Tags are optional, default to an empty array
   });
 
   if (!newPost) {
@@ -26,7 +39,7 @@ const createPost = asyncHandler(async (req, res) => {
     .json(new ApiResponse(201, "Post created successfully", newPost));
 });
 
-// Delete All Posts
+// Delete All Posts (Dangerous operation, use with caution)
 const deleteAllPosts = asyncHandler(async (req, res) => {
   // Delete all posts from the database
   const result = await Post.deleteMany({});
@@ -45,13 +58,32 @@ const deleteAllPosts = asyncHandler(async (req, res) => {
 
 // Delete a post by ID
 const deletePostById = asyncHandler(async (req, res) => {
+  // get the logged user ID from cookies
+  const userId = req.cookies?.loggedUser;
+
+  if (!userId) {
+    throw new ApiError(400, "User is not logged in");
+  }
+
+  // Extract the post ID from the request parameters
   const { id } = req.params;
+
   // Find the post by ID and delete it
-  const deletedPost = await Post.findByIdAndDelete(id);
+  const deletedPost = await Post.findById(id);
+
   // If the post is not found, it sends a 404 status code with a message
   if (!deletedPost) {
     throw new ApiError(404, "Post not found");
   }
+
+  // Check if the user is the author of the post
+  if (deletedPost.author.toString() !== userId) {
+    throw new ApiError(403, "You are not authorized to delete this post");
+  }
+
+  // Delete the post
+  await Post.findByIdAndDelete(id);
+
   // If the post is deleted successfully, it sends a success message with a 200 status code
   res
     .status(200)
@@ -61,7 +93,15 @@ const deletePostById = asyncHandler(async (req, res) => {
 // Get All Posts
 // This function retrieves all posts from the database and sends them as a JSON response.
 const getAllPosts = asyncHandler(async (req, res) => {
-  const { search, category, author, page, limit, tag, sort } = req.query;
+  const author = req.cookies?.loggedUser; // Assuming the author's ID is stored in cookies
+
+  // Check if the user is logged in
+  if (!author) {
+    throw new ApiError(400, "User is not logged in");
+  }
+
+  // get the query parameters
+  const { search, category, page, limit, tag, sort } = req.query;
 
   // Calculate pagination
   const pageNum = page ? Math.max(1, parseInt(page)) : 1; // Ensure page is at least 1
@@ -90,7 +130,7 @@ const getAllPosts = asyncHandler(async (req, res) => {
 
   // Add author filter if provided
   if (author) {
-    filters.push({ author: { $regex: author, $options: "i" } });
+    filters.push({ author: author });
   }
 
   // Add tag filter if provided
@@ -119,12 +159,28 @@ const getAllPosts = asyncHandler(async (req, res) => {
 // Get Post by ID
 // This function retrieves a single post by its ID from the database and sends it as a JSON
 const getPostById = asyncHandler(async (req, res) => {
+  // get the logged user ID from cookies
+  const userId = req.cookies?.loggedUser;
+
+  // Check if the user is logged in
+  if (!userId) {
+    throw new ApiError(400, "User is not logged in");
+  }
+
+  // Extract the post ID from the request parameters
   const { id } = req.params;
+
+  // find the post by ID
   const post = await Post.findById(id);
-  // If the post is not found, it sends a 404 status code with a message
-  // If the post is found, it sends the post data with a 200 status code
+
+  // check if the post exists
   if (!post) {
     throw new ApiError(404, "Post not found");
+  }
+
+  // if author is loggedin or authenticated
+  if (post.author.toString() !== userId) {
+    throw new ApiError(403, "You are not authorized to view this post");
   }
 
   res
@@ -132,7 +188,7 @@ const getPostById = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, "Post retrieved successfully", post));
 });
 
-// Get Post Statistics
+// Get Post Statistics (for admin or analytics)
 const getPostStats = asyncHandler(async (req, res) => {
   // Count total number of posts
   const totalPosts = await Post.countDocuments();
@@ -160,8 +216,31 @@ const getPostStats = asyncHandler(async (req, res) => {
 
 // Update a post by ID
 const updatePostbyId = asyncHandler(async (req, res) => {
-  // Extract the post ID from the request parameters and the updated data from the request body
+  // get the logged user ID from cookies
+  const userId = req.cookies?.loggedUser;
+
+  // Check if the user is logged in
+  if (!userId) {
+    throw new ApiError(400, "User is not logged in");
+  }
+
+  // get the post id from the request parameters
   const { id } = req.params;
+
+  // find the post by ID
+  const post = await Post.findById(id);
+
+  // If the post is not found, it sends a 404 status code with a message
+  if (!post) {
+    throw new ApiError(404, "Post not found");
+  }
+
+  // Check if the user is the author of the post
+  if (post.author.toString() !== userId) {
+    throw new ApiError(403, "You are not authorized to update this post");
+  }
+
+  // get the post data from the request body
   const { title, content, author, category, tags } = req.body;
 
   // Find the post by ID and update it with the new data
@@ -170,10 +249,7 @@ const updatePostbyId = asyncHandler(async (req, res) => {
     { title, content, author, category, tags },
     { new: true } // This option returns the updated document
   );
-  // If the post is not found, it sends a 404 status code with a message
-  if (!updatedPost) {
-    throw new ApiError(404, "Post not found");
-  }
+
   // If the post is updated successfully, it sends the updated post data with a 200 status code
   res
     .status(200)

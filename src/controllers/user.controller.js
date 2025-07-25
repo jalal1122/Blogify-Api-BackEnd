@@ -84,6 +84,7 @@ const loginUser = asyncHandler(async (req, res) => {
   // Send response with tokens
   res
     .status(200)
+    .cookie("loggedUser", user._id, cookieOptions)
     .cookie("refreshToken", refreshToken, cookieOptions)
     .cookie("accessToken", accessToken, cookieOptions)
     .json(
@@ -103,16 +104,19 @@ const loginUser = asyncHandler(async (req, res) => {
 
 // Logout a user
 const logoutUser = asyncHandler(async (req, res) => {
-  // get the access token from the request cookies
-  const { accessToken } = req.cookies;
+  const { id } = req.user;
 
-  // If access token is not present, throw an error
-  if (!accessToken) {
-    throw new ApiError(
-      401,
-      "Access token is required for logout or unauthorized access"
-    );
+  // Find the user by ID
+  const user = await User.findById(id).select("-password");
+
+  // If user not found, throw an error
+  if (!user) {
+    throw new ApiError(404, "User not found");
   }
+
+  // Clear the refresh token from the user document
+  user.refreshToken = null;
+  await user.save();
 
   // clear the refresh token and access token from the cookies and
   res
