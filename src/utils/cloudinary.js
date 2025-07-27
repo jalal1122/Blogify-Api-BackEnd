@@ -32,6 +32,8 @@ const uploadOnCloudinary = async (filePath) => {
       console.error("Error deleting file from local filesystem:", error);
     }
 
+    console.log("File uploaded to Cloudinary successfully:", result.secure_url);
+
     return result; // Return the result of the upload
   } catch (error) {
     if (filePath && fs.existsSync(filePath)) {
