@@ -5,10 +5,11 @@ import {
   logoutUser,
 } from "../controllers/user.controller.js";
 import authMiddleware from "../middleware/auth.middleware.js";
+import upload from "../middleware/multer.middleware.js";
 
 const userRouter = express.Router();
 
-userRouter.post("/register", registerUser);
+userRouter.post("/register", upload.single("profilePicture"), registerUser);
 
 userRouter.post("/login", loginUser);
 

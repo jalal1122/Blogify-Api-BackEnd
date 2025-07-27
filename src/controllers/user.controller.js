@@ -3,7 +3,7 @@ import ApiError from "../utils/ApiError.js";
 import User from "../models/user.models.js";
 import ApiResponse from "../utils/ApiResponse.js";
 import bcrypt from "bcryptjs";
-import jwt from "jsonwebtoken";
+import uploadOnCloudinary from "../utils/cloudinary.js";
 
 // cookie options
 const cookieOptions = {
@@ -27,26 +27,53 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new ApiError(400, "User already exists with this email");
   }
 
-  // Create a new user
-  const user = new User({
-    username,
-    email,
-    password,
-  });
+  if (req.file) {
+    const result = await uploadOnCloudinary(req.file.path);
 
-  // Save the user to the database
-  await user.save();
+    // If the file is uploaded successfully
+    const user = new User({
+      username,
+      email,
+      password,
+      profilePicture: result.secure_url, // Store the URL of the uploaded image
+    });
 
-  // Send response
-  res.status(201).json(
-    new ApiResponse(201, "User registered successfully", {
-      user: {
-        id: user._id,
-        username: user.username,
-        email: user.email,
-      },
-    })
-  );
+    // save the user to the database
+    await user.save();
+
+    // Send response
+    return res.status(201).json(
+      new ApiResponse(201, "User registered successfully", {
+        user: {
+          id: user._id,
+          username: user.username,
+          email: user.email,
+          profilePicture: user.profilePicture, // Include the profile picture URL in the response
+        },
+      })
+    );
+  } else {
+    // Create a new user
+    const user = new User({
+      username,
+      email,
+      password,
+    });
+
+    // Save the user to the database
+    await user.save();
+
+    // Send response
+    res.status(201).json(
+      new ApiResponse(201, "User registered successfully", {
+        user: {
+          id: user._id,
+          username: user.username,
+          email: user.email,
+        },
+      })
+    );
+  }
 });
 
 // Login a user
@@ -108,7 +135,7 @@ const logoutUser = asyncHandler(async (req, res) => {
 
   // Clear the refresh token from the user document
   user.refreshToken = null;
-  
+
   await user.save();
 
   // clear the refresh token and access token from the cookies and
