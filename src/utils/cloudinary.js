@@ -6,11 +6,19 @@ import fs from "fs";
 const uploadOnCloudinary = async (filePath) => {
   // using try catch to handle errors
   try {
+    console.log("Attempting to upload file to Cloudinary:", filePath);
+    
     // Configure Cloudinary with api keys and secrets from environment variables
     cloudinary.config({
       cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
       api_key: process.env.CLOUDINARY_API_KEY,
       api_secret: process.env.CLOUDINARY_API_SECRET,
+    });
+
+    console.log("Cloudinary config:", {
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+      api_key: process.env.CLOUDINARY_API_KEY ? "***SET***" : "NOT SET",
+      api_secret: process.env.CLOUDINARY_API_SECRET ? "***SET***" : "NOT SET",
     });
 
     // Upload the file to Cloudinary

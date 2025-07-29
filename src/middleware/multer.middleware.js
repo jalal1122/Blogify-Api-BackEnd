@@ -20,11 +20,13 @@ const upload = multer({
   storage: storage,
   limits: { fileSize: 5 * 1024 * 1024 }, // Set a file size limit of 5MB
   fileFilter: (req, file, cb) => {
+    console.log("File being uploaded:", file); // Debug log
     const allowedTypes = /jpeg|jpg|png|gif/;
     const extname = allowedTypes.test(file.mimetype);
     if (extname) {
       return cb(null, true);
     }
+    console.log("File type not allowed:", file.mimetype); // Debug log
     cb(new Error("Only images are allowed"));
   },
 });

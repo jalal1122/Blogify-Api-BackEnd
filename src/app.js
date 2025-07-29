@@ -4,9 +4,17 @@ import userRouter from "./routes/user.route.js";
 import commentRouter from "./routes/comments.route.js";
 import cookieParser from "cookie-parser";
 import likeDislikeRouter from "./routes/likeDislike.route.js";
+import cors from "cors";
 
 // initialize express app
 const app = express();
+
+// Configure CORS
+app.use(cors({
+  origin: ['http://localhost:5173', 'http://localhost:3000'], // Vite dev server ports
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+}));
 
 // Middleware to parse JSON, URL-encoded data and enable CORS
 app.use(express.json());
