@@ -8,7 +8,9 @@ import uploadOnCloudinary from "../utils/cloudinary.js";
 // cookie options
 const cookieOptions = {
   httpOnly: true,
-  secure: false,
+  secure: false, // Set to true in production with HTTPS
+  sameSite: "strict",
+  maxAge: 24 * 60 * 60 * 1000, // 24 hours
 };
 
 // Register a new user
@@ -138,14 +140,17 @@ const loginUser = asyncHandler(async (req, res) => {
 const logoutUser = asyncHandler(async (req, res) => {
   const { user } = req;
 
+  console.log("Logout request received for user:", user._id);
+
   // Clear the refresh token from the user document
   user.refreshToken = null;
 
   await user.save();
 
-  // clear the refresh token and access token from the cookies and
+  // clear all cookies
   res
     .status(200)
+    .clearCookie("loggedUser", cookieOptions)
     .clearCookie("refreshToken", cookieOptions)
     .clearCookie("accessToken", cookieOptions)
     .json(new ApiResponse(200, "User logged out successfully"));

@@ -7,7 +7,7 @@ const uploadOnCloudinary = async (filePath) => {
   // using try catch to handle errors
   try {
     console.log("Attempting to upload file to Cloudinary:", filePath);
-    
+
     // Configure Cloudinary with api keys and secrets from environment variables
     cloudinary.config({
       cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
